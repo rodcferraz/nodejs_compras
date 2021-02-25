@@ -14,7 +14,7 @@ exports.cadastrar = async function(req, res){
         if (!erros.isEmpty())
             return res.status(422).jsonp(erros.array());
 
-        if (await Cliente.find({_id : idCliente}, (err, cliente)=> {
+        if (await Cliente.find({nome : req.body.nome}, (err, cliente)=> {
             if (err) throw err;
             return cliente;
         }).length > 0){
@@ -39,7 +39,7 @@ exports.comprar = async function(req, res){
 
         const compra = new Compra({
             idCliente : req.body.idCliente,
-            idProduto : req.body.idProduto,
+            idItem : req.body.idItem,
             quantidade : req.body.quantidade
         });
 
@@ -51,7 +51,7 @@ exports.comprar = async function(req, res){
         if (cliente.length == 0)
             return res.send('Cliente não encontrado');
 
-        var item = await Item.find({_id: compra.idProduto}, (err, item) => {
+        var item = await Item.find({_id: compra.idItem}, (err, item) => {
             if (err) throw err;
             return item;
         });
@@ -66,7 +66,7 @@ exports.comprar = async function(req, res){
         let precoTotalCompra = item[0].preco * compra.quantidade;
 
         if (cliente[0].dinheiro > precoTotalCompra){
-            AdicionarEmJson('../historico/compras.json', compra);
+            AdicionarEmJson('./historico/compras.json', compra);
             await ItemRepository.AtualizarItem({_id: item[0]._id}, {$set: {quantidade : item[0].quantidade - compra.quantidade}});
             await ClienteRepository.AtualizarCarteira(cliente[0]._id, cliente[0].dinheiro - precoTotalCompra, res);
         }     

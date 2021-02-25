@@ -88,7 +88,7 @@ exports.atualizar = async function(req, res) {
         if (!erros.isEmpty())
             return res.status(422).jsonp(erros.array()); 
 
-        let buscar = {_id : req.body._id};
+        let buscar = {_id : req.body.id};
         
         let atualizados = {$set: {
             nome: req.body.nome, 

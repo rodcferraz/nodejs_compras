@@ -5,7 +5,7 @@ const Compras = new mongoose.Schema({
         type : String,
         required: true
     },
-    idProduto : {
+    idItem : {
         type : String,
         required: true
     },
