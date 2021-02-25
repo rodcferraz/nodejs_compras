@@ -1,6 +1,8 @@
 # nodejs_compras
 
-Projeto node.js para cadastro de items e clientes em mongoDb. 
+Projeto node.js para cadastro de items e clientes em mongoDb. </br>
+
+Para executar o projeto, abra o terminal com o caminha da pasta do projeto e execute npm run dev </br>
 
 Rotas para ITEM:
 
