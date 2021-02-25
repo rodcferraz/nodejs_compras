@@ -4,8 +4,8 @@ Projeto node.js para cadastro de items e clientes em mongoDb.
 
 Rotas para ITEM:
 
-GET (localhost)/item/todos - Listar todos os itens cadastrados</br>
 POST (localhost)/item/cadastrar - Cadastro de item; Parâmetros para envio (nome, preco, quantidade, tipo, descrição)</br>
+GET (localhost)/item/todos - Listar todos os itens cadastrados</br>
 GET (locahost)/item/:tipo - Listar itens que possuam um determinado tipo</br>
 POST (localhost)/item/buscar - Listar itens por id ou nome</br>
 PUT (locahost)/item/atualizar - Atualizar item; Parâmetros para envio (id, nome, preco, quantidade, tipo, descricao)</br>
