@@ -5,7 +5,7 @@ const server = express();
 const bodyParser = require("body-parser");
 
 //config
-server.listen(3000);
+server.listen(4000);
 server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({extended: true}));
 

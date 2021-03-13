@@ -14,12 +14,11 @@ exports.cadastrar = async function(req, res){
         if (!erros.isEmpty())
             return res.status(422).jsonp(erros.array());
 
-        if (await Cliente.find({nome : req.body.nome}, (err, cliente)=> {
-            if (err) throw err;
-            return cliente;
-        }).length > 0){
-            res.send("Cliente já existe")
-        }
+        await ClienteRepository.ComNome(req.body.nome, (err, cliente)=> {
+                if (err) return res.send('Error' + err);    
+                else if (cliente.length > 0)
+                    return res.send("Cliente já existe");
+        });
 
         await ClienteRepository.Cadastrar(req.body);
 
@@ -34,8 +33,10 @@ exports.comprar = async function(req, res){
     try{
         const erros = validationResult(req);
 
-        if (!erros.isEmpty())
+        if (!erros.isEmpty()){
+            console.log(erros);
             return res.status(422).jsonp(erros.array());
+        }
 
         const compra = new Compra({
             idCliente : req.body.idCliente,
@@ -43,32 +44,41 @@ exports.comprar = async function(req, res){
             quantidade : req.body.quantidade
         });
 
-        let cliente = await Cliente.find({_id : compra.idCliente}, (err, cliente)=> {
-            if (err) throw err;
-            return cliente;
-        });
+        let clienteEncontrado, itemEncontrado;
 
-        if (cliente.length == 0)
-            return res.send('Cliente não encontrado');
+        await ClienteRepository.ComId(compra.idCliente, (err, cliente) => {
+                if (err) return res.send('Error: ' + err) ;
+                else if (cliente.length == 0) 
+                    return res.send('Cliente não encontrado');
+                
+                clienteEncontrado = cliente.find((cl) => cl._id == compra.idCliente);    
+        })
 
-        var item = await Item.find({_id: compra.idItem}, (err, item) => {
-            if (err) throw err;
-            return item;
-        });
-    
-        if (item.length == 0)
-            return res.send('Item não encontrado');
+        await ItemRepository.ComId(compra.idItem, (err, items) => {
+            if (err) return res.send('Error: '+ err);
+            else if (items.length === 0) return res.send('Item não encontrado');
+            
+            itemEncontrado = items.find((item) => item._id == compra.idItem);
+        })
 
-        if (item[0].quantidade < compra.quantidade){
-            return res.send("Existem somente" + item[0].quantidade + "disponíveis no estoque;")
+        if (itemEncontrado.quantidade < compra.quantidade){
+            return res.send("Existem somente" + itemEncontrado.quantidade + "disponíveis no estoque;")
         }
+        
+        let precoTotalCompra = itemEncontrado.preco * compra.quantidade;
 
-        let precoTotalCompra = item[0].preco * compra.quantidade;
-
-        if (cliente[0].dinheiro > precoTotalCompra){
-            AdicionarEmJson('./historico/compras.json', compra);
-            await ItemRepository.AtualizarItem({_id: item[0]._id}, {$set: {quantidade : item[0].quantidade - compra.quantidade}});
-            await ClienteRepository.AtualizarCarteira(cliente[0]._id, cliente[0].dinheiro - precoTotalCompra, res);
+        if (clienteEncontrado.dinheiro > precoTotalCompra){
+           
+            AdicionarEmJson('./historico/compras.json', compra, (err, response) => {
+                if (err) return res.send(err);
+            });
+             await ItemRepository.AtualizarItem({_id: itemEncontrado._id}, {$set: {quantidade : itemEncontrado.quantidade - compra.quantidade}}, (err, response) => {
+                 if (err) return res.send(err);
+             });
+            await ClienteRepository.AtualizarCarteira(clienteEncontrado._id, clienteEncontrado.dinheiro - precoTotalCompra, (err, response) => {
+                if (err) return res.send('Error: '+ err);
+            });
+            res.send("Compra efetuada")
         }     
         else{
             res.send("Dinheiro insuficiente");         
@@ -79,9 +89,9 @@ exports.comprar = async function(req, res){
     }
 }
 
-const AdicionarEmJson = function (path, compra) {
+const AdicionarEmJson = function (path, compra, callback) {
     fs.readFile(path, 'utf8', function(err, data){
-        if (err) throw err;
+        if (err) callback(err, undefined);
 
         let obj = [];
         let json;
@@ -96,8 +106,8 @@ const AdicionarEmJson = function (path, compra) {
         }
            
         fs.writeFile(path, json, 'utf8', function (err, response){
-            if (err) throw err;
-            res.send(response);
+            callback(err, response);
+
         }); 
     });
 }

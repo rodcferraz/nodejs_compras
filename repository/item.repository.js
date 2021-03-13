@@ -1,9 +1,9 @@
 const Item = require('../models/item')
 
-exports.ComId = async function(idProduto){
+exports.ComId = async function(idProduto, callback){
     await Item.find({_id: idProduto}, (err, item) => {
-        if (err) throw err;
-        return item;
+        if (err) callback(err, undefined);;
+        callback(undefined, item);
     });
 }
 
@@ -40,9 +40,9 @@ exports.Atualizar = async function(buscar, atualizados, res){
       });
 }
 
-exports.AtualizarItem = async function(buscar, atualizados, res){
+exports.AtualizarItem = async function(buscar, atualizados){
     await Item.updateOne(buscar, atualizados, function(err, item) {
-        if (err) throw err;
+        if (err) callback(err) ;
       });
 }
 

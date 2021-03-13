@@ -1,17 +1,15 @@
 const Cliente = require('../models/clientes');
 
 
-exports.ComId = async function(idCliente){
+exports.ComId = async function(idCliente, callback){
     await Cliente.find({_id : idCliente}, (err, cliente)=> {
-        if (err) throw err;
-        return cliente;
+        callback(err, cliente);
     });
 }
 
-exports.ComNome = async function(nome){
-    await Cliente.find({nome: nome}, (err, item)=>{
-        if (err) throw err;
-        return item;
+exports.ComNome = async function(nome, callback){
+    await Cliente.find({nome: nome}, (err, cliente)=>{
+        callback(err, cliente);
     }); 
 }
 
@@ -19,10 +17,9 @@ exports.Cadastrar = async function(cliente){
     await Cliente.create(cliente);
 }
 
-exports.AtualizarCarteira = async function(idCliente, dinheiro, res){
-    await Cliente.updateOne({_id: idCliente}, {$set : {dinheiro : dinheiro}}, function(err, cliente){
-        if (err) throw err;
-        res.send("Compra efetuada");
+exports.AtualizarCarteira = async function(idCliente, dinheiro, callback){
+    await Cliente.updateOne({_id: idCliente}, {$set : {dinheiro : dinheiro}}, function(err){
+        if (err) callback(err);
     });
 }
 
